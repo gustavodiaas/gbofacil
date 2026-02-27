@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import html2canvas from "html2canvas"
+import jsPDF from "jspdf"
 
 interface Operation {
   id: string
@@ -108,7 +109,6 @@ export default function GBOAnalysis() {
 
   const calculateTaktTime = (): number | undefined => {
     if (!workShiftTime || !dailyDemand) return undefined
-
     const shiftTime = Number.parseFloat(workShiftTime)
     const demand = Number.parseFloat(dailyDemand)
 
@@ -135,11 +135,7 @@ export default function GBOAnalysis() {
     setErrors(newErrors)
 
     if (!nameValidation.isValid || !timeValidation.isValid) {
-      toast({
-        title: "Dados inválidos",
-        description: "Verifique os campos destacados em vermelho.",
-        variant: "destructive",
-      })
+      toast({ title: "Dados inválidos", description: "Verifique os campos destacados.", variant: "destructive" })
       return
     }
 
@@ -154,31 +150,18 @@ export default function GBOAnalysis() {
     setNewOperationName("")
     setNewOperationTime("")
     setErrors({})
-
-    toast({
-      title: "✅ Operação adicionada",
-      description: `"${newOperation.name}" foi adicionada com sucesso.`,
-    })
+    toast({ title: "✅ Operação adicionada", description: `"${newOperation.name}" foi adicionada.` })
   }
 
   const removeOperation = (id: string) => {
     const operation = operations.find((op) => op.id === id)
     setOperations(operations.filter((op) => op.id !== id))
-
-    if (operation) {
-      toast({
-        title: "Operação removida",
-        description: `"${operation.name}" foi removida.`,
-      })
-    }
+    if (operation) toast({ title: "Operação removida", description: `"${operation.name}" foi removida.` })
   }
 
   const reorderOperations = (newOperations: Operation[]) => {
     setOperations(newOperations)
-    toast({
-      title: "✅ Ordem atualizada",
-      description: "A ordem das operações foi reorganizada.",
-    })
+    toast({ title: "✅ Ordem atualizada", description: "A ordem das operações foi reorganizada." })
   }
 
   const validateTaktFields = () => {
@@ -196,17 +179,15 @@ export default function GBOAnalysis() {
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      addOperation()
-    }
+    if (e.key === "Enter") addOperation()
   }
 
-  const handleExportPDF = async () => {
+  const handleExportFullPDF = async () => {
     if (operations.length === 0) return
     setIsLoading(true)
     try {
       await exportToPDF(operations, timeUnit)
-      toast({ title: "✅ PDF exportado", description: "O arquivo PDF foi baixado." })
+      toast({ title: "✅ Relatório exportado", description: "O arquivo PDF foi baixado." })
     } catch (error) {
       toast({ title: "❌ Erro", description: "Falha ao exportar PDF.", variant: "destructive" })
     } finally {
@@ -227,31 +208,33 @@ export default function GBOAnalysis() {
     }
   }
 
-  const handleExportChartImage = async () => {
+  // NOVA FUNÇÃO: Exportar SOMENTE o Gráfico em PDF
+  const handleExportChartPDF = async () => {
     if (operations.length === 0 || !chartRef.current) return
     setIsLoading(true)
     try {
-      // Pequeno delay para garantir que o gráfico terminou de renderizar animações/responsividade
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 300)) // delay segurança
 
-      const isDark = document.documentElement.classList.contains("dark")
       const canvas = await html2canvas(chartRef.current, {
-        backgroundColor: isDark ? "#09090b" : "#ffffff",
+        backgroundColor: "#ffffff", // Força fundo branco
         scale: 2,
         useCORS: true,
-        allowTaint: true,
-        logging: false
       })
+
+      const imgData = canvas.toDataURL("image/png")
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? "landscape" : "portrait",
+        unit: "px",
+        format: [canvas.width, canvas.height]
+      })
+
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height)
+      pdf.save("grafico-gbo.pdf")
       
-      const link = document.createElement("a")
-      link.download = "grafico-gbo.png"
-      link.href = canvas.toDataURL("image/png")
-      link.click()
-      
-      toast({ title: "✅ Gráfico exportado", description: "Imagem salva com sucesso." })
+      toast({ title: "✅ Gráfico exportado", description: "PDF salvo com sucesso." })
     } catch (error) {
       console.error(error)
-      toast({ title: "❌ Erro", description: "Não foi possível exportar a imagem.", variant: "destructive" })
+      toast({ title: "❌ Erro", description: "Não foi possível exportar o gráfico.", variant: "destructive" })
     } finally {
       setIsLoading(false)
     }
@@ -279,7 +262,6 @@ export default function GBOAnalysis() {
     } finally {
       setIsLoading(false)
     }
-
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
@@ -303,9 +285,7 @@ export default function GBOAnalysis() {
             </div>
             <div className="flex items-center gap-3">
               <ThemeToggle />
-              <Badge variant="secondary" className="text-sm tech-glow">
-                Industrial Analytics
-              </Badge>
+              <Badge variant="secondary" className="text-sm tech-glow">Industrial Analytics</Badge>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2 bg-transparent tech-glow hover:scale-105 transition-all">
@@ -316,13 +296,11 @@ export default function GBOAnalysis() {
                 <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Como usar a Análise GBO</DialogTitle>
-                    <DialogDescription>
-                      Guia rápido para utilizar a ferramenta
-                    </DialogDescription>
+                    <DialogDescription>Guia rápido para utilizar a ferramenta</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 text-sm">
                     <p className="text-muted-foreground">
-                      O GBO identifica gargalos comparando os tempos operacionais com o Takt Time (ritmo necessário para a demanda).
+                      O GBO identifica gargalos comparando os tempos operacionais com o Takt Time.
                     </p>
                   </div>
                 </DialogContent>
@@ -341,9 +319,7 @@ export default function GBOAnalysis() {
                   <div className="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
                   Inserir Operações
                 </CardTitle>
-                <CardDescription>
-                  Adicione operações para gerar o gráfico GBO
-                </CardDescription>
+                <CardDescription>Adicione operações para gerar o gráfico GBO</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4 p-4 bg-gradient-to-br from-muted/30 to-accent/5 rounded-xl border border-accent/20 tech-glow">
@@ -361,10 +337,7 @@ export default function GBOAnalysis() {
                           min="0"
                           placeholder="8.0"
                           value={workShiftTime}
-                          onChange={(e) => {
-                            setWorkShiftTime(e.target.value)
-                            validateTaktFields()
-                          }}
+                          onChange={(e) => { setWorkShiftTime(e.target.value); validateTaktFields(); }}
                           onBlur={validateTaktFields}
                           className={errors.workShiftTime ? "border-red-500 focus:border-red-500" : ""}
                         />
@@ -390,10 +363,7 @@ export default function GBOAnalysis() {
                           min="0"
                           placeholder="100"
                           value={dailyDemand}
-                          onChange={(e) => {
-                            setDailyDemand(e.target.value)
-                            validateTaktFields()
-                          }}
+                          onChange={(e) => { setDailyDemand(e.target.value); validateTaktFields(); }}
                           onBlur={validateTaktFields}
                           className={errors.dailyDemand ? "border-red-500 focus:border-red-500" : ""}
                         />
@@ -485,7 +455,7 @@ export default function GBOAnalysis() {
 
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button variant="outline" size="sm" className="flex-1 tech-glow" onClick={handleImportExcel} disabled={isLoading}>
-                    <Upload className="h-4 w-4 mr-2" /> Importar Excel
+                    <Upload className="h-4 w-4 mr-2" /> Importar
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -494,11 +464,11 @@ export default function GBOAnalysis() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem onClick={handleExportChartImage}>
-                        <ImageIcon className="h-4 w-4 mr-2" /> Exportar Gráfico (Imagem)
+                      <DropdownMenuItem onClick={handleExportChartPDF}>
+                        <ImageIcon className="h-4 w-4 mr-2" /> Exportar Gráfico (PDF)
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleExportPDF}>
-                        <FileText className="h-4 w-4 mr-2" /> Exportar PDF
+                      <DropdownMenuItem onClick={handleExportFullPDF}>
+                        <FileText className="h-4 w-4 mr-2" /> Exportar Relatório Textual
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleExportExcel}>
                         <FileSpreadsheet className="h-4 w-4 mr-2" /> Exportar Planilha
@@ -507,12 +477,7 @@ export default function GBOAnalysis() {
                   </DropdownMenu>
                 </div>
 
-                <DraggableOperationsList
-                  operations={operations}
-                  timeUnit={timeUnit}
-                  onReorder={reorderOperations}
-                  onRemove={removeOperation}
-                />
+                <DraggableOperationsList operations={operations} timeUnit={timeUnit} onReorder={reorderOperations} onRemove={removeOperation} />
               </CardContent>
             </Card>
           </div>
@@ -521,23 +486,10 @@ export default function GBOAnalysis() {
             {operations.length > 0 ? (
               <>
                 <div className="tech-card tech-glow">
-                  <CalculationsDashboard
-                    operations={operations}
-                    timeUnit={timeUnit}
-                    taktTime={calculateTaktTime()}
-                    taktTimeUnit={timeUnitTakt}
-                    demandUnit={demandUnit}
-                  />
+                  <CalculationsDashboard operations={operations} timeUnit={timeUnit} taktTime={calculateTaktTime()} taktTimeUnit={timeUnitTakt} demandUnit={demandUnit} />
                 </div>
-                {/* Aqui está o contêiner do gráfico que será exportado limpo */}
                 <div className="tech-card tech-glow p-4 rounded-lg bg-card" ref={chartRef}>
-                  <GBOChart
-                    operations={operations}
-                    timeUnit={timeUnit}
-                    taktTime={calculateTaktTime()}
-                    taktTimeUnit={timeUnitTakt}
-                    demandUnit={demandUnit}
-                  />
+                  <GBOChart operations={operations} timeUnit={timeUnit} taktTime={calculateTaktTime()} taktTimeUnit={timeUnitTakt} demandUnit={demandUnit} />
                 </div>
               </>
             ) : (
