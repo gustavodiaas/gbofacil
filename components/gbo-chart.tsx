@@ -1,7 +1,10 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from "recharts"
+import { Input } from "@/components/ui/input"
+import { Pencil } from "lucide-react"
 
 interface Operation {
   id: string
@@ -18,6 +21,9 @@ interface GBOChartProps {
 }
 
 export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit }: GBOChartProps) {
+  const [chartTitle, setChartTitle] = useState("Gráfico de Balanceamento de Operações (GBO)")
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+
   const convertToSeconds = (time: number, unit: "minutes" | "seconds"): number => {
     return unit === "minutes" ? time * 60 : time
   }
@@ -92,7 +98,23 @@ export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit }: GBOCh
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Gráfico de Balanceamento de Operações (GBO)</CardTitle>
+        <CardTitle className="text-xl flex items-center gap-2 group cursor-pointer" onClick={() => setIsEditingTitle(true)}>
+          {isEditingTitle ? (
+            <Input
+              autoFocus
+              value={chartTitle}
+              onChange={(e) => setChartTitle(e.target.value)}
+              onBlur={() => setIsEditingTitle(false)}
+              onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
+              className="text-xl font-semibold h-8 w-full max-w-md"
+            />
+          ) : (
+            <>
+              <span>{chartTitle}</span>
+              <Pencil className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
+            </>
+          )}
+        </CardTitle>
         <CardDescription>
           Visualização dos tempos de cada operação com destaque para o gargalo, linha de tempo médio e takt time
         </CardDescription>
