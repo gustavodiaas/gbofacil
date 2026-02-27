@@ -231,17 +231,26 @@ export default function GBOAnalysis() {
     if (operations.length === 0 || !chartRef.current) return
     setIsLoading(true)
     try {
+      // Pequeno delay para garantir que o gráfico terminou de renderizar animações/responsividade
+      await new Promise(resolve => setTimeout(resolve, 500))
+
       const isDark = document.documentElement.classList.contains("dark")
       const canvas = await html2canvas(chartRef.current, {
         backgroundColor: isDark ? "#09090b" : "#ffffff",
-        scale: 2
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false
       })
+      
       const link = document.createElement("a")
       link.download = "grafico-gbo.png"
       link.href = canvas.toDataURL("image/png")
       link.click()
+      
       toast({ title: "✅ Gráfico exportado", description: "Imagem salva com sucesso." })
     } catch (error) {
+      console.error(error)
       toast({ title: "❌ Erro", description: "Não foi possível exportar a imagem.", variant: "destructive" })
     } finally {
       setIsLoading(false)
@@ -520,6 +529,7 @@ export default function GBOAnalysis() {
                     demandUnit={demandUnit}
                   />
                 </div>
+                {/* Aqui está o contêiner do gráfico que será exportado limpo */}
                 <div className="tech-card tech-glow p-4 rounded-lg bg-card" ref={chartRef}>
                   <GBOChart
                     operations={operations}
