@@ -32,7 +32,6 @@ export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit }: GBOCh
     return targetUnit === "minutes" ? timeInSeconds / 60 : timeInSeconds
   }
 
-  // Convert all operations to seconds for calculations, then back to display unit
   const operationsInSeconds = operations.map((op) => ({
     ...op,
     timeInSeconds: convertToSeconds(op.time, op.unit),
@@ -48,7 +47,6 @@ export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit }: GBOCh
   const averageTime = convertFromSeconds(averageTimeInSeconds, timeUnit)
 
   const maxTimeInSeconds = Math.max(...operationsInSeconds.map((op) => op.timeInSeconds))
-
   const taktTimeInDisplayUnit = taktTime ? convertFromSeconds(taktTime, timeUnit) : undefined
 
   const maxOperationTime = Math.max(...operationsInDisplayUnit.map((op) => op.timeInDisplayUnit))
@@ -65,7 +63,7 @@ export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit }: GBOCh
       name: operation.name,
       time: operation.timeInDisplayUnit,
       isBottleneck,
-      exceedsTakt, // Added flag for bars exceeding takt
+      exceedsTakt,
       index: index + 1,
       originalUnit: operation.unit,
     }
@@ -148,7 +146,8 @@ export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit }: GBOCh
               {taktTimeInDisplayUnit && (
                 <ReferenceLine y={taktTimeInDisplayUnit} stroke="#000000" strokeDasharray="8 4" strokeWidth={2} />
               )}
-              <Bar dataKey="time" radius={[4, 4, 0, 0]}>
+              {/* O segredo da estabilidade da exportação está na linha abaixo: isAnimationActive={false} */}
+              <Bar dataKey="time" radius={[4, 4, 0, 0]} isAnimationActive={false}>
                 {chartData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
