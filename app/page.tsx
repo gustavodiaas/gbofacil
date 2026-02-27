@@ -20,6 +20,7 @@ import {
   HelpCircle,
   CheckCircle2,
   AlertCircle,
+  Image as ImageIcon,
 } from "lucide-react"
 import { GBOChart } from "@/components/gbo-chart"
 import { CalculationsDashboard } from "@/components/calculations-dashboard"
@@ -36,6 +37,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import html2canvas from "html2canvas"
 
 interface Operation {
   id: string
@@ -77,6 +79,7 @@ export default function GBOAnalysis() {
   const [isLoading, setIsLoading] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const chartRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -199,56 +202,47 @@ export default function GBOAnalysis() {
   }
 
   const handleExportPDF = async () => {
-    if (operations.length === 0) {
-      toast({
-        title: "Nenhuma operação",
-        description: "Adicione operações antes de exportar.",
-        variant: "destructive",
-      })
-      return
-    }
-
+    if (operations.length === 0) return
     setIsLoading(true)
     try {
       await exportToPDF(operations, timeUnit)
-      toast({
-        title: "✅ PDF exportado",
-        description: "O arquivo PDF foi baixado com sucesso.",
-      })
+      toast({ title: "✅ PDF exportado", description: "O arquivo PDF foi baixado." })
     } catch (error) {
-      toast({
-        title: "❌ Erro na exportação",
-        description: "Não foi possível exportar o PDF.",
-        variant: "destructive",
-      })
+      toast({ title: "❌ Erro", description: "Falha ao exportar PDF.", variant: "destructive" })
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleExportExcel = async () => {
-    if (operations.length === 0) {
-      toast({
-        title: "Nenhuma operação",
-        description: "Adicione operações antes de exportar.",
-        variant: "destructive",
-      })
-      return
-    }
-
+    if (operations.length === 0) return
     setIsLoading(true)
     try {
       await exportToExcel(operations, timeUnit)
-      toast({
-        title: "✅ Excel exportado",
-        description: "O arquivo Excel foi baixado com sucesso.",
-      })
+      toast({ title: "✅ Excel exportado", description: "A planilha foi baixada." })
     } catch (error) {
-      toast({
-        title: "❌ Erro na exportação",
-        description: error instanceof Error ? error.message : "Erro desconhecido.",
-        variant: "destructive",
+      toast({ title: "❌ Erro", description: "Falha ao exportar Excel.", variant: "destructive" })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleExportChartImage = async () => {
+    if (operations.length === 0 || !chartRef.current) return
+    setIsLoading(true)
+    try {
+      const isDark = document.documentElement.classList.contains("dark")
+      const canvas = await html2canvas(chartRef.current, {
+        backgroundColor: isDark ? "#09090b" : "#ffffff",
+        scale: 2
       })
+      const link = document.createElement("a")
+      link.download = "grafico-gbo.png"
+      link.href = canvas.toDataURL("image/png")
+      link.click()
+      toast({ title: "✅ Gráfico exportado", description: "Imagem salva com sucesso." })
+    } catch (error) {
+      toast({ title: "❌ Erro", description: "Não foi possível exportar a imagem.", variant: "destructive" })
     } finally {
       setIsLoading(false)
     }
@@ -266,32 +260,18 @@ export default function GBOAnalysis() {
     try {
       const importedOperations = await importFromExcel(file)
       if (importedOperations.length === 0) {
-        toast({
-          title: "Nenhuma operação encontrada",
-          description: "O arquivo não contém operações válidas.",
-          variant: "destructive",
-        })
+        toast({ title: "Aviso", description: "O arquivo não contém operações válidas.", variant: "destructive" })
         return
       }
-
       setOperations(importedOperations)
-      toast({
-        title: "✅ Importação concluída",
-        description: `${importedOperations.length} operações foram importadas.`,
-      })
+      toast({ title: "✅ Importação concluída", description: `${importedOperations.length} operações carregadas.` })
     } catch (error) {
-      toast({
-        title: "❌ Erro na importação",
-        description: error instanceof Error ? error.message : "Erro desconhecido.",
-        variant: "destructive",
-      })
+      toast({ title: "❌ Erro", description: "Falha na importação.", variant: "destructive" })
     } finally {
       setIsLoading(false)
     }
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
-    }
+    if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
   return (
@@ -319,11 +299,7 @@ export default function GBOAnalysis() {
               </Badge>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2 bg-transparent tech-glow hover:scale-105 transition-all duration-300"
-                  >
+                  <Button variant="outline" size="sm" className="gap-2 bg-transparent tech-glow hover:scale-105 transition-all">
                     <HelpCircle className="h-4 w-4" />
                     <span className="hidden sm:inline">Ajuda</span>
                   </Button>
@@ -332,51 +308,13 @@ export default function GBOAnalysis() {
                   <DialogHeader>
                     <DialogTitle>Como usar a Análise GBO</DialogTitle>
                     <DialogDescription>
-                      Guia completo para utilizar a ferramenta de Gráfico de Balanceamento de Operações
+                      Guia rápido para utilizar a ferramenta
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 text-sm">
-                    <div>
-                      <h4 className="font-semibold mb-2">O que é GBO?</h4>
-                      <p className="text-muted-foreground">
-                        O Gráfico de Balanceamento de Operações (GBO) é uma ferramenta visual que ajuda a identificar
-                        gargalos em processos produtivos, comparando os tempos de cada operação com o Takt Time.
-                      </p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2">Takt Time</h4>
-                      <p className="text-muted-foreground">
-                        É o ritmo de produção necessário para atender a demanda do cliente. Calculado como:
-                        <strong> Tempo Disponível ÷ Demanda Diária</strong>
-                      </p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2">Como interpretar o gráfico:</h4>
-                      <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                        <li>
-                          <strong>Barras azuis:</strong> Operações dentro do tempo normal
-                        </li>
-                        <li>
-                          <strong>Barras vermelhas:</strong> Operações gargalo (tempo maior que outras ou que excedem o
-                          Takt)
-                        </li>
-                        <li>
-                          <strong>Linha preta pontilhada:</strong> Takt Time de referência
-                        </li>
-                        <li>
-                          <strong>Linha azul pontilhada:</strong> Tempo médio das operações
-                        </li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2">Funcionalidades:</h4>
-                      <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                        <li>Adicione operações manualmente ou importe de Excel</li>
-                        <li>Arraste operações para reordenar</li>
-                        <li>Exporte relatórios em PDF ou Excel</li>
-                        <li>Misture unidades de tempo (minutos/segundos)</li>
-                      </ul>
-                    </div>
+                    <p className="text-muted-foreground">
+                      O GBO identifica gargalos comparando os tempos operacionais com o Takt Time (ritmo necessário para a demanda).
+                    </p>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -395,7 +333,7 @@ export default function GBOAnalysis() {
                   Inserir Operações
                 </CardTitle>
                 <CardDescription>
-                  Adicione operações com seus respectivos tempos para gerar o gráfico GBO
+                  Adicione operações para gerar o gráfico GBO
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -420,24 +358,12 @@ export default function GBOAnalysis() {
                           }}
                           onBlur={validateTaktFields}
                           className={errors.workShiftTime ? "border-red-500 focus:border-red-500" : ""}
-                          aria-describedby={errors.workShiftTime ? "shift-time-error" : undefined}
                         />
-                        {errors.workShiftTime && (
-                          <p id="shift-time-error" className="text-xs text-red-500 flex items-center gap-1">
-                            <AlertCircle className="h-3 w-3" />
-                            {errors.workShiftTime}
-                          </p>
-                        )}
                       </div>
                       <div className="space-y-2">
                         <Label className="text-xs">Unidade</Label>
-                        <Select
-                          value={timeUnitTakt}
-                          onValueChange={(value: "minutes" | "seconds" | "hours") => setTimeUnitTakt(value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
+                        <Select value={timeUnitTakt} onValueChange={(v: any) => setTimeUnitTakt(v)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="minutes">Min</SelectItem>
                             <SelectItem value="hours">Horas</SelectItem>
@@ -461,12 +387,9 @@ export default function GBOAnalysis() {
                           }}
                           onBlur={validateTaktFields}
                           className={errors.dailyDemand ? "border-red-500 focus:border-red-500" : ""}
-                          aria-describedby={errors.dailyDemand ? "demand-error" : undefined}
                         />
                         <Select value={demandUnit} onValueChange={setDemandUnit}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="peças">Peças</SelectItem>
                             <SelectItem value="m²">m²</SelectItem>
@@ -479,24 +402,15 @@ export default function GBOAnalysis() {
                           </SelectContent>
                         </Select>
                       </div>
-                      {errors.dailyDemand && (
-                        <p id="demand-error" className="text-xs text-red-500 flex items-center gap-1">
-                          <AlertCircle className="h-3 w-3" />
-                          {errors.dailyDemand}
-                        </p>
-                      )}
                     </div>
                     {calculateTaktTime() && (
                       <Alert className="bg-primary/10 border-primary/20">
                         <CheckCircle2 className="h-4 w-4 text-primary" />
                         <AlertDescription>
                           <strong>Takt Time: </strong>
-                          {timeUnitTakt === "hours"
-                            ? (calculateTaktTime()! / 3600).toFixed(2)
-                            : timeUnitTakt === "minutes"
-                              ? (calculateTaktTime()! / 60).toFixed(2)
-                              : calculateTaktTime()!.toFixed(2)}{" "}
-                          {timeUnitTakt}/{demandUnit.toLowerCase()}
+                          {timeUnitTakt === "hours" ? (calculateTaktTime()! / 3600).toFixed(2)
+                            : timeUnitTakt === "minutes" ? (calculateTaktTime()! / 60).toFixed(2)
+                            : calculateTaktTime()!.toFixed(2)} {timeUnitTakt}/{demandUnit.toLowerCase()}
                         </AlertDescription>
                       </Alert>
                     )}
@@ -504,14 +418,12 @@ export default function GBOAnalysis() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="time-unit" className="flex items-center gap-2">
+                  <Label className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
                     Unidade de Tempo
                   </Label>
-                  <Select value={timeUnit} onValueChange={(value: "minutes" | "seconds") => setTimeUnit(value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                  <Select value={timeUnit} onValueChange={(v: any) => setTimeUnit(v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="minutes">Minutos</SelectItem>
                       <SelectItem value="seconds">Segundos</SelectItem>
@@ -521,41 +433,26 @@ export default function GBOAnalysis() {
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="operation-name" className="flex items-center gap-2">
+                    <Label className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
                       Nome da Operação
                     </Label>
                     <Input
-                      id="operation-name"
-                      placeholder="Ex: Montagem, Soldagem, Inspeção..."
+                      placeholder="Ex: Montagem, Soldagem..."
                       value={newOperationName}
                       onChange={(e) => {
                         setNewOperationName(e.target.value)
-                        if (errors.operationName) {
-                          const validation = validateText(e.target.value)
-                          if (validation.isValid) {
-                            setErrors((prev) => ({ ...prev, operationName: undefined }))
-                          }
-                        }
+                        if (errors.operationName) setErrors((prev) => ({ ...prev, operationName: undefined }))
                       }}
                       onKeyPress={handleKeyPress}
-                      className={errors.operationName ? "border-red-500 focus:border-red-500" : ""}
-                      aria-describedby={errors.operationName ? "name-error" : undefined}
                     />
-                    {errors.operationName && (
-                      <p id="name-error" className="text-xs text-red-500 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.operationName}
-                      </p>
-                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="operation-time" className="flex items-center gap-2">
+                    <Label className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
                       Tempo ({timeUnit})
                     </Label>
                     <Input
-                      id="operation-time"
                       type="number"
                       step="0.1"
                       min="0"
@@ -563,65 +460,39 @@ export default function GBOAnalysis() {
                       value={newOperationTime}
                       onChange={(e) => {
                         setNewOperationTime(e.target.value)
-                        if (errors.operationTime) {
-                          const validation = validateNumber(e.target.value)
-                          if (validation.isValid) {
-                            setErrors((prev) => ({ ...prev, operationTime: undefined }))
-                          }
-                        }
+                        if (errors.operationTime) setErrors((prev) => ({ ...prev, operationTime: undefined }))
                       }}
                       onKeyPress={handleKeyPress}
-                      className={errors.operationTime ? "border-red-500 focus:border-red-500" : ""}
-                      aria-describedby={errors.operationTime ? "time-error" : undefined}
                     />
-                    {errors.operationTime && (
-                      <p id="time-error" className="text-xs text-red-500 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.operationTime}
-                      </p>
-                    )}
                   </div>
                   <Button
                     onClick={addOperation}
-                    className="w-full transition-all duration-300 hover:scale-[1.02] tech-glow hover:shadow-lg"
+                    className="w-full tech-glow"
                     disabled={!newOperationName.trim() || !newOperationTime.trim() || isLoading}
                   >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar Operação
+                    <Plus className="h-4 w-4 mr-2" /> Adicionar Operação
                   </Button>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 bg-transparent transition-all duration-300 hover:scale-[1.02] tech-glow"
-                    onClick={handleImportExcel}
-                    disabled={isLoading}
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Importar Excel
+                  <Button variant="outline" size="sm" className="flex-1 tech-glow" onClick={handleImportExcel} disabled={isLoading}>
+                    <Upload className="h-4 w-4 mr-2" /> Importar Excel
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 bg-transparent transition-all duration-300 hover:scale-[1.02] tech-glow"
-                        disabled={operations.length === 0 || isLoading}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Exportar
+                      <Button variant="outline" size="sm" className="flex-1 tech-glow" disabled={operations.length === 0 || isLoading}>
+                        <Download className="h-4 w-4 mr-2" /> Exportar
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
+                      <DropdownMenuItem onClick={handleExportChartImage}>
+                        <ImageIcon className="h-4 w-4 mr-2" /> Exportar Gráfico (Imagem)
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleExportPDF}>
-                        <FileText className="h-4 w-4 mr-2" />
-                        Exportar PDF
+                        <FileText className="h-4 w-4 mr-2" /> Exportar PDF
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleExportExcel}>
-                        <FileSpreadsheet className="h-4 w-4 mr-2" />
-                        Exportar Excel
+                        <FileSpreadsheet className="h-4 w-4 mr-2" /> Exportar Planilha
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -649,7 +520,7 @@ export default function GBOAnalysis() {
                     demandUnit={demandUnit}
                   />
                 </div>
-                <div className="tech-card tech-glow">
+                <div className="tech-card tech-glow p-4 rounded-lg bg-card" ref={chartRef}>
                   <GBOChart
                     operations={operations}
                     timeUnit={timeUnit}
@@ -666,10 +537,6 @@ export default function GBOAnalysis() {
                     <BarChart3 className="h-16 w-16 text-muted-foreground" />
                   </div>
                   <h3 className="text-lg font-semibold text-muted-foreground mb-2">Nenhuma operação adicionada</h3>
-                  <p className="text-sm text-muted-foreground text-center max-w-md">
-                    Adicione operações com seus tempos para visualizar o gráfico de balanceamento e as métricas de
-                    análise.
-                  </p>
                 </CardContent>
               </Card>
             )}
