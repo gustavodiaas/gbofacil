@@ -48,7 +48,6 @@ export function CalculationsDashboard({
   const taktTimeInDisplayUnit = taktTime ? convertFromSeconds(taktTime, timeUnit) : undefined
 
   return (
-    {/* Novo contêiner externo com o painel de vidro unificado para remover a "caixa branca ao fundo" */}
     <div className="glass-panel p-6 rounded-3xl border border-primary/20 shadow-[0_0_20px_-5px_rgba(6,182,212,0.1)]">
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Tempo Total */}
@@ -96,7 +95,7 @@ export function CalculationsDashboard({
           </CardContent>
         </Card>
 
-        {/* Operação Gargalo (Destaque Visual + Truncamento para texto longo como 'solda') */}
+        {/* Operação Gargalo (Destaque Visual + Truncamento) */}
         <Card className="glass-panel border-destructive/40 relative overflow-hidden group shadow-[0_0_15px_-3px_rgba(239,68,68,0.15)]">
           <div className="absolute inset-0 bg-destructive/5 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 relative z-10">
