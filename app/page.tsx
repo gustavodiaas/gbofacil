@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
 import { ThemeToggle } from "@/components/theme-toggle"
 import {
   Plus,
@@ -192,7 +191,6 @@ export default function GBOAnalysis() {
 
   const handleExportChartPDF = () => {
     if (operations.length === 0) return
-    // Aciona a impressão nativa do navegador focada apenas no gráfico
     window.print()
   }
 
@@ -223,7 +221,6 @@ export default function GBOAnalysis() {
 
   return (
     <>
-      {/* CSS embutido para isolar o gráfico na hora da impressão/PDF nativo */}
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
           body * { visibility: hidden; }
@@ -241,92 +238,60 @@ export default function GBOAnalysis() {
         }
       `}} />
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background relative">
         <input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileChange} className="hidden" />
 
-      <div className="pt-6 pb-8 px-4 w-full flex justify-center z-50">
-        <header className="glass-panel tech-glow rounded-2xl w-full max-w-5xl px-6 py-3 flex items-center justify-between shadow-lg">
-          <div className="flex items-center gap-4">
-            <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 relative group overflow-hidden">
-              <div className="absolute inset-0 bg-primary/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-              {/* Logo Vetorial Integrado */}
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary relative z-10">
-                <path d="M3 3v18h18" />
-                <path d="M18 9l-5 5-4-4-5 5" />
-                <circle cx="18" cy="9" r="2.5" fill="currentColor" />
-              </svg>
+        <div className="pt-6 pb-8 px-4 w-full flex justify-center z-50">
+          <header className="glass-panel tech-glow rounded-2xl w-full max-w-5xl px-6 py-3 flex items-center justify-between shadow-lg">
+            <div className="flex items-center gap-4">
+              <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 relative group overflow-hidden">
+                <div className="absolute inset-0 bg-primary/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary relative z-10">
+                  <path d="M3 3v18h18" />
+                  <path d="M18 9l-5 5-4-4-5 5" />
+                  <circle cx="18" cy="9" r="2.5" fill="currentColor" />
+                </svg>
+              </div>
+              <div className="flex flex-col">
+                <h1 className="text-xl font-bold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+                  Análise GBO
+                </h1>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-primary/80 font-bold">Terminal GBO</p>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <h1 className="text-xl font-bold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                Análise GBO
-              </h1>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-primary/80 font-bold">Terminal GBO</p>
+            
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+                    <HelpCircle className="h-5 w-5" />
+                    <span className="sr-only">Ajuda</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto glass-panel border-primary/20">
+                  <DialogHeader>
+                    <DialogTitle className="text-primary flex items-center gap-2">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-5 5"/><circle cx="18" cy="9" r="2.5" fill="currentColor"/></svg>
+                      Manual Técnico GBO
+                    </DialogTitle>
+                    <DialogDescription>Protocolo Analítico de Balanceamento</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 text-sm mt-4 text-muted-foreground">
+                    <p>
+                      O <strong>GBO (Gráfico de Balanceamento de Operações)</strong> é uma ferramenta analítica de fluxo. Ele plota os tempos de ciclo individuais de cada operação em relação ao Takt Time estabelecido.
+                    </p>
+                    <p>
+                      <strong>Objetivo:</strong> Identificar restrições sistêmicas (gargalos) e fornecer uma base de dados limpa para o nivelamento da capacidade produtiva, reduzindo ociosidade e superprodução.
+                    </p>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
-                  <HelpCircle className="h-5 w-5" />
-                  <span className="sr-only">Ajuda</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto glass-panel border-primary/20">
-                <DialogHeader>
-                  <DialogTitle className="text-primary flex items-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-5 5"/><circle cx="18" cy="9" r="2.5" fill="currentColor"/></svg>
-                    Manual Técnico GBO
-                  </DialogTitle>
-                  <DialogDescription>Protocolo Analítico de Balanceamento</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 text-sm mt-4 text-muted-foreground">
-                  <p>
-                    O <strong>GBO (Gráfico de Balanceamento de Operações)</strong> é uma ferramenta analítica de fluxo. Ele plota os tempos de ciclo individuais de cada operação em relação ao Takt Time estabelecido.
-                  </p>
-                  <p>
-                    <strong>Objetivo:</strong> Identificar restrições sistêmicas (gargalos) e fornecer uma base de dados limpa para o nivelamento da capacidade produtiva, reduzindo ociosidade e superprodução.
-                  </p>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </header>
-      </div>
-          
-          <div className="flex items-center gap-4">
-            <Badge variant="outline" className="text-[10px] font-bold tracking-wider uppercase border-primary/30 text-primary bg-primary/5 hidden md:flex px-3 py-1 rounded-full shadow-[0_0_10px_rgba(6,182,212,0.15)] inset-0">
-              Active
-            </Badge>
-            <div className="h-6 w-px bg-border/50 hidden sm:block"></div>
-            <ThemeToggle />
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
-                  <HelpCircle className="h-5 w-5" />
-                  <span className="sr-only">Ajuda</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto glass-panel border-primary/20">
-                <DialogHeader>
-                  <DialogTitle className="text-primary flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" /> Manual do Sistema
-                  </DialogTitle>
-                  <DialogDescription>Protocolo de uso da Análise GBO</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 text-sm mt-4">
-                  <p className="text-muted-foreground">
-                    O GBO identifica gargalos comparando os tempos operacionais com o Takt Time. Utilize os controles para mapear o fluxo.
-                  </p>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </header>
-      </div>
+          </header>
+        </div>
 
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 pb-12">
           <div className="grid gap-6 lg:gap-8 xl:grid-cols-3">
             <div className="xl:col-span-1">
               <Card className="tech-card tech-glow">
@@ -501,7 +466,6 @@ export default function GBOAnalysis() {
                   <div className="tech-card tech-glow">
                     <CalculationsDashboard operations={operations} timeUnit={timeUnit} taktTime={calculateTaktTime()} taktTimeUnit={timeUnitTakt} demandUnit={demandUnit} />
                   </div>
-                  {/* A classe print-chart avisa o CSS que APENAS ESTA DIV será impressa */}
                   <div className="tech-card tech-glow p-4 rounded-lg bg-card print-chart">
                     <GBOChart operations={operations} timeUnit={timeUnit} taktTime={calculateTaktTime()} taktTimeUnit={timeUnitTakt} demandUnit={demandUnit} />
                   </div>
