@@ -244,46 +244,47 @@ export default function GBOAnalysis() {
       <div className="min-h-screen bg-background">
         <input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileChange} className="hidden" />
 
-        <header className="border-b border-border bg-card/50 backdrop-blur-sm tech-card">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-primary/10 tech-glow">
-                  <BarChart3 className="h-8 w-8 text-primary" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                    Análise GBO
-                  </h1>
-                  <p className="text-xs text-muted-foreground">Gráfico de Balanceamento de Operações</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <ThemeToggle />
-                <Badge variant="secondary" className="text-sm tech-glow">Industrial Analytics</Badge>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-2 bg-transparent tech-glow hover:scale-105 transition-all">
-                      <HelpCircle className="h-4 w-4" />
-                      <span className="hidden sm:inline">Ajuda</span>
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Como usar a Análise GBO</DialogTitle>
-                      <DialogDescription>Guia rápido para utilizar a ferramenta</DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 text-sm">
-                      <p className="text-muted-foreground">
-                        O GBO identifica gargalos comparando os tempos operacionais com o Takt Time.
-                      </p>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
+       <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <BarChart3 className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex flex-col">
+              <h1 className="text-xl font-bold tracking-tight text-foreground">
+                Análise GBO
+              </h1>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Gráfico de Balanceamento</p>
             </div>
           </div>
-        </header>
+          
+          <div className="flex items-center gap-3">
+            <Badge variant="outline" className="text-xs font-normal border-primary/20 text-primary bg-primary/5 hidden sm:flex">
+              Industrial Analytics
+            </Badge>
+            <ThemeToggle />
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary">
+                  <HelpCircle className="h-5 w-5" />
+                  <span className="sr-only">Ajuda</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Como usar a Análise GBO</DialogTitle>
+                  <DialogDescription>Guia rápido para utilizar a ferramenta</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 text-sm">
+                  <p className="text-muted-foreground">
+                    O GBO identifica gargalos comparando os tempos operacionais com o Takt Time.
+                  </p>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+      </header>
 
         <div className="container mx-auto px-4 py-8">
           <div className="grid gap-6 lg:gap-8 xl:grid-cols-3">
