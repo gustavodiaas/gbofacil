@@ -244,12 +244,17 @@ export default function GBOAnalysis() {
       <div className="min-h-screen bg-background">
         <input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileChange} className="hidden" />
 
-      <div className="pt-6 pb-2 px-4 w-full flex justify-center sticky top-0 z-50">
+      <div className="pt-6 pb-8 px-4 w-full flex justify-center z-50">
         <header className="glass-panel tech-glow rounded-2xl w-full max-w-5xl px-6 py-3 flex items-center justify-between shadow-lg">
           <div className="flex items-center gap-4">
             <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 relative group overflow-hidden">
               <div className="absolute inset-0 bg-primary/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-              <BarChart3 className="h-5 w-5 text-primary relative z-10" />
+              {/* Logo Vetorial Integrado */}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary relative z-10">
+                <path d="M3 3v18h18" />
+                <path d="M18 9l-5 5-4-4-5 5" />
+                <circle cx="18" cy="9" r="2.5" fill="currentColor" />
+              </svg>
             </div>
             <div className="flex flex-col">
               <h1 className="text-xl font-bold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
@@ -258,6 +263,37 @@ export default function GBOAnalysis() {
               <p className="text-[10px] uppercase tracking-[0.2em] text-primary/80 font-bold">Terminal GBO</p>
             </div>
           </div>
+          
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+                  <HelpCircle className="h-5 w-5" />
+                  <span className="sr-only">Ajuda</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto glass-panel border-primary/20">
+                <DialogHeader>
+                  <DialogTitle className="text-primary flex items-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-5 5"/><circle cx="18" cy="9" r="2.5" fill="currentColor"/></svg>
+                    Manual Técnico GBO
+                  </DialogTitle>
+                  <DialogDescription>Protocolo Analítico de Balanceamento</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 text-sm mt-4 text-muted-foreground">
+                  <p>
+                    O <strong>GBO (Gráfico de Balanceamento de Operações)</strong> é uma ferramenta analítica de fluxo. Ele plota os tempos de ciclo individuais de cada operação em relação ao Takt Time estabelecido.
+                  </p>
+                  <p>
+                    <strong>Objetivo:</strong> Identificar restrições sistêmicas (gargalos) e fornecer uma base de dados limpa para o nivelamento da capacidade produtiva, reduzindo ociosidade e superprodução.
+                  </p>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </header>
+      </div>
           
           <div className="flex items-center gap-4">
             <Badge variant="outline" className="text-[10px] font-bold tracking-wider uppercase border-primary/30 text-primary bg-primary/5 hidden md:flex px-3 py-1 rounded-full shadow-[0_0_10px_rgba(6,182,212,0.15)] inset-0">
