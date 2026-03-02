@@ -221,50 +221,66 @@ export default function GBOAnalysis() {
   return (
     <>
      <style dangerouslySetInnerHTML={{__html: `
-  @media print {
-    /* 1. Mantenha o layout em paisagem e remova as margens padrão do navegador */
-    @page {
-      size: landscape;
-      margin: 0;
-    }
+        @media print {
+          /* 1. Folha em paisagem e sem margens do navegador */
+          @page {
+            size: landscape;
+            margin: 0;
+          }
+          
+          /* 2. Trava o tamanho do site em exatamente 1 folha e mata o scroll (resolve a página 2 em branco) */
+          html, body {
+            width: 100vw !important;
+            height: 100vh !important;
+            overflow: hidden !important;
+            background: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
 
-    /* Força cores exatas, crucial para a legenda */
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+          /* 3. Força as cores da legenda a imprimirem */
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
 
-    /* 2. Oculta absolutamente tudo */
-    body * { visibility: hidden; }
+          /* 4. Oculta tudo fisicamente */
+          body * {
+            visibility: hidden;
+          }
 
-    /* 3. Transforma o BODY na página inteira e o prepara para centralizar o gráfico */
-    body {
-      visibility: visible;
-      display: flex !important;
-      justify-content: center !important; /* Centraliza horizontalmente */
-      align-items: center !important;     /* Centraliza verticalmente */
-      width: 100vw;
-      height: 100vh;
-      margin: 0 !important;
-      background: #ffffff !important; /* Garante fundo branco */
-    }
+          /* 5. Exibe apenas o gráfico */
+          .print-chart, .print-chart * {
+            visibility: visible;
+          }
 
-    /* 4. Configura o contêiner do gráfico para ser centralizado */
-    .print-chart {
-      visibility: visible;
-      display: block !important;
-      /* Removemos o posicionamento absoluto top=0/left=0 anterior */
-      width: auto !important; /* Ocupa apenas o espaço necessário */
-      max-width: 90% !important; /* Limita a largura para não colar nas bordas com o padding */
-      height: auto !important; /* Mantém a proporção */
-      max-height: 85vh !important; /* Evita que o gráfico fique maior que a página */
-      padding: 1.5cm !important; /* Mantemos um padding como margem de segurança */
-      margin: auto !important; /* Força centralização extra se Flexbox falhar */
-      background: #ffffff !important;
-      border-radius: 12px !important; /* Mantém a estética original */
-      box-shadow: none !important;
-      border: none !important;
-    }
-  }
-`}} />
+          /* 6. Transforma o gráfico num painel flutuante que ocupa 100% da folha, centralizando o miolo */
+          .print-chart {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 1.5cm !important; /* Respiro perfeito nas bordas */
+            box-sizing: border-box !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 9999 !important;
+          }
+          
+          /* 7. Garante que o Recharts estique no centro */
+          .print-chart > div {
+            width: 100% !important;
+            height: 100% !important;
+          }
+        }
+      `}} />
 
       <div className="min-h-screen bg-background relative">
         <input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileChange} className="hidden" />
