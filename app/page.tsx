@@ -221,20 +221,29 @@ export default function GBOAnalysis() {
     <>
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
-          @page { size: landscape; margin: 10mm; }
+          /* Zera a margem nativa para matar cabeçalhos do navegador */
+          @page { size: landscape; margin: 0; }
+          
           body { 
             background: white !important; 
             -webkit-print-color-adjust: exact !important; 
             print-color-adjust: exact !important; 
           }
+
+          /* Destrói qualquer Toast/Alerta na hora da impressão */
+          [data-radix-toast-provider], 
+          [role="region"][aria-label="Notifications"], 
+          .toaster {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+          }
         }
       `}} />
 
-      {/* Remove o fundo escuro e libera o container em impressão */}
       <div className="min-h-screen bg-background relative print:min-h-0 print:bg-transparent">
         <input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileChange} className="hidden" />
 
-        {/* print:hidden oculta o header */}
         <div className="pt-6 pb-8 px-4 w-full flex justify-center z-50 print:hidden">
           <header className="glass-panel tech-glow rounded-2xl w-full max-w-5xl px-6 py-3 flex items-center justify-between shadow-lg">
             <div className="flex items-center gap-4">
@@ -285,11 +294,10 @@ export default function GBOAnalysis() {
           </header>
         </div>
 
-        {/* Configurações para o layout focar só no gráfico ao imprimir */}
-        <div className="container mx-auto px-4 pb-12 print:p-0 print:max-w-none print:w-[100vw]">
+        {/* Adicionado print:p-12 (aprox 3cm) para criar a margem de segurança branca na folha */}
+        <div className="container mx-auto px-4 pb-12 print:p-12 print:max-w-none print:w-[100vw]">
           <div className="grid gap-6 lg:gap-8 xl:grid-cols-3 print:flex print:w-full">
             
-            {/* print:hidden oculta a barra lateral inteira de inserção */}
             <div className="xl:col-span-1 print:hidden">
               <Card className="tech-card tech-glow">
                 <CardHeader className="pb-4">
@@ -460,15 +468,12 @@ export default function GBOAnalysis() {
               </Card>
             </div>
 
-            {/* Expande para tela cheia na impressão */}
             <div className="xl:col-span-2 space-y-6 lg:space-y-8 print:w-full print:space-y-0">
               {operations.length > 0 ? (
                 <>
-                  {/* print:hidden oculta os cards de estatísticas */}
                   <div className="tech-card tech-glow print:hidden">
                     <CalculationsDashboard operations={operations} timeUnit={timeUnit} taktTime={calculateTaktTime()} taktTimeUnit={timeUnitTakt} demandUnit={demandUnit} />
                   </div>
-                  {/* Remove bordas, sombras e paddings apenas do gráfico final */}
                   <div className="tech-card tech-glow p-4 rounded-lg bg-card print-chart print:p-0 print:border-none print:shadow-none print:bg-transparent">
                     <GBOChart operations={operations} timeUnit={timeUnit} taktTime={calculateTaktTime()} taktTimeUnit={timeUnitTakt} demandUnit={demandUnit} />
                   </div>
