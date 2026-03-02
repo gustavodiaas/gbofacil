@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ThemeToggle } from "@/components/theme-toggle"
 import {
   Plus,
-  BarChart3,
   Download,
   Upload,
   FileSpreadsheet,
@@ -220,72 +219,23 @@ export default function GBOAnalysis() {
 
   return (
     <>
-     <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{__html: `
         @media print {
-          /* 1. Folha em paisagem e sem margens do navegador */
-          @page {
-            size: landscape;
-            margin: 0;
-          }
-          
-          /* 2. Trava o tamanho do site em exatamente 1 folha e mata o scroll (resolve a página 2 em branco) */
-          html, body {
-            width: 100vw !important;
-            height: 100vh !important;
-            overflow: hidden !important;
-            background: #ffffff !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-
-          /* 3. Força as cores da legenda a imprimirem */
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-            color-adjust: exact !important;
-          }
-
-          /* 4. Oculta tudo fisicamente */
-          body * {
-            visibility: hidden;
-          }
-
-          /* 5. Exibe apenas o gráfico */
-          .print-chart, .print-chart * {
-            visibility: visible;
-          }
-
-          /* 6. Transforma o gráfico num painel flutuante que ocupa 100% da folha, centralizando o miolo */
-          .print-chart {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            margin: 0 !important;
-            padding: 1.5cm !important; /* Respiro perfeito nas bordas */
-            box-sizing: border-box !important;
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            z-index: 9999 !important;
-          }
-          
-          /* 7. Garante que o Recharts estique no centro */
-          .print-chart > div {
-            width: 100% !important;
-            height: 100% !important;
+          @page { size: landscape; margin: 10mm; }
+          body { 
+            background: white !important; 
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important; 
           }
         }
       `}} />
 
-      <div className="min-h-screen bg-background relative">
+      {/* Remove o fundo escuro e libera o container em impressão */}
+      <div className="min-h-screen bg-background relative print:min-h-0 print:bg-transparent">
         <input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileChange} className="hidden" />
 
-        <div className="pt-6 pb-8 px-4 w-full flex justify-center z-50">
+        {/* print:hidden oculta o header */}
+        <div className="pt-6 pb-8 px-4 w-full flex justify-center z-50 print:hidden">
           <header className="glass-panel tech-glow rounded-2xl w-full max-w-5xl px-6 py-3 flex items-center justify-between shadow-lg">
             <div className="flex items-center gap-4">
               <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 relative group overflow-hidden">
@@ -335,9 +285,12 @@ export default function GBOAnalysis() {
           </header>
         </div>
 
-        <div className="container mx-auto px-4 pb-12">
-          <div className="grid gap-6 lg:gap-8 xl:grid-cols-3">
-            <div className="xl:col-span-1">
+        {/* Configurações para o layout focar só no gráfico ao imprimir */}
+        <div className="container mx-auto px-4 pb-12 print:p-0 print:max-w-none print:w-[100vw]">
+          <div className="grid gap-6 lg:gap-8 xl:grid-cols-3 print:flex print:w-full">
+            
+            {/* print:hidden oculta a barra lateral inteira de inserção */}
+            <div className="xl:col-span-1 print:hidden">
               <Card className="tech-card tech-glow">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-xl flex items-center gap-2">
@@ -507,21 +460,28 @@ export default function GBOAnalysis() {
               </Card>
             </div>
 
-            <div className="xl:col-span-2 space-y-6 lg:space-y-8">
+            {/* Expande para tela cheia na impressão */}
+            <div className="xl:col-span-2 space-y-6 lg:space-y-8 print:w-full print:space-y-0">
               {operations.length > 0 ? (
                 <>
-                  <div className="tech-card tech-glow">
+                  {/* print:hidden oculta os cards de estatísticas */}
+                  <div className="tech-card tech-glow print:hidden">
                     <CalculationsDashboard operations={operations} timeUnit={timeUnit} taktTime={calculateTaktTime()} taktTimeUnit={timeUnitTakt} demandUnit={demandUnit} />
                   </div>
-                  <div className="tech-card tech-glow p-4 rounded-lg bg-card print-chart">
+                  {/* Remove bordas, sombras e paddings apenas do gráfico final */}
+                  <div className="tech-card tech-glow p-4 rounded-lg bg-card print-chart print:p-0 print:border-none print:shadow-none print:bg-transparent">
                     <GBOChart operations={operations} timeUnit={timeUnit} taktTime={calculateTaktTime()} taktTimeUnit={timeUnitTakt} demandUnit={demandUnit} />
                   </div>
                 </>
               ) : (
-                <Card className="tech-card tech-glow">
+                <Card className="tech-card tech-glow print:hidden">
                   <CardContent className="flex flex-col items-center justify-center py-16">
                     <div className="p-4 rounded-full bg-muted/30 mb-4">
-                      <BarChart3 className="h-16 w-16 text-muted-foreground" />
+                      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground opacity-20">
+                        <path d="M3 3v18h18" />
+                        <path d="M18 9l-5 5-4-4-5 5" />
+                        <circle cx="18" cy="9" r="2.5" fill="currentColor" />
+                      </svg>
                     </div>
                     <h3 className="text-lg font-semibold text-muted-foreground mb-2">Nenhuma operação adicionada</h3>
                   </CardContent>
