@@ -16,7 +16,6 @@ import {
   FileSpreadsheet,
   HelpCircle,
   CheckCircle2,
-  AlertCircle,
   FileImage,
 } from "lucide-react"
 import { GBOChart } from "@/components/gbo-chart"
@@ -277,29 +276,19 @@ export default function GBOAnalysis() {
                     </DialogTitle>
                     <DialogDescription>Protocolo Analítico de Balanceamento</DialogDescription>
                   </DialogHeader>
-                 <div className="flex flex-col sm:flex-row gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 tech-glow" onClick={handleImportExcel} disabled={isLoading}>
-                      <Upload className="h-4 w-4 mr-2" /> Importar
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="flex-1 tech-glow" disabled={isLoading}>
-                          <Download className="h-4 w-4 mr-2" /> Exportar
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem onClick={downloadTemplate}>
-                          <FileSpreadsheet className="h-4 w-4 mr-2 text-primary" /> Baixar Modelo (Excel)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExportChartPDF} disabled={operations.length === 0}>
-                          <FileImage className="h-4 w-4 mr-2" /> Exportar Gráfico (PDF)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExportExcel} disabled={operations.length === 0}>
-                          <FileSpreadsheet className="h-4 w-4 mr-2" /> Exportar Dados (Excel)
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  <div className="space-y-4 text-sm mt-4 text-muted-foreground">
+                    <p>
+                      O <strong>GBO (Gráfico de Balanceamento de Operações)</strong> é uma ferramenta analítica de fluxo. Ele plota os tempos de ciclo individuais de cada operação em relação ao Takt Time estabelecido.
+                    </p>
+                    <p>
+                      <strong>Objetivo:</strong> Identificar restrições sistêmicas (gargalos) e fornecer uma base de dados limpa para o nivelamento da capacidade produtiva, reduzindo ociosidade e superprodução.
+                    </p>
                   </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </header>
+        </div>
 
         <div className="container mx-auto px-4 pb-12">
           <div className="grid gap-6 lg:gap-8 xl:grid-cols-3">
@@ -450,16 +439,19 @@ export default function GBOAnalysis() {
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="flex-1 tech-glow" disabled={operations.length === 0 || isLoading}>
+                        <Button variant="outline" size="sm" className="flex-1 tech-glow" disabled={isLoading}>
                           <Download className="h-4 w-4 mr-2" /> Exportar
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuItem onClick={handleExportChartPDF}>
+                        <DropdownMenuItem onClick={downloadTemplate}>
+                          <FileSpreadsheet className="h-4 w-4 mr-2 text-primary" /> Baixar Modelo (Excel)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportChartPDF} disabled={operations.length === 0}>
                           <FileImage className="h-4 w-4 mr-2" /> Exportar Gráfico (PDF)
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExportExcel}>
-                          <FileSpreadsheet className="h-4 w-4 mr-2" /> Exportar Planilha (Excel)
+                        <DropdownMenuItem onClick={handleExportExcel} disabled={operations.length === 0}>
+                          <FileSpreadsheet className="h-4 w-4 mr-2" /> Exportar Dados (Excel)
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
