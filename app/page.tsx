@@ -189,10 +189,10 @@ export default function GBOAnalysis() {
 
   const handleExportChartPDF = () => {
     if (operations.length === 0) return
-    // Atraso de 100ms para permitir que o menu dropdown feche visualmente antes da captura de tela da impressão
+    // Aumentado para 300ms. Dá tempo de sobra para a animação do menu desaparecer da tela
     setTimeout(() => {
       window.print()
-    }, 100)
+    }, 300)
   }
 
   const handleImportExcel = () => {
@@ -224,7 +224,6 @@ export default function GBOAnalysis() {
     <>
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
-          /* Zera a margem nativa para matar cabeçalhos do navegador */
           @page { size: landscape; margin: 0; }
           
           body { 
@@ -233,7 +232,6 @@ export default function GBOAnalysis() {
             print-color-adjust: exact !important; 
           }
 
-          /* Destrói Toasts, Alertas e Menus Suspensos nativamente na hora da impressão */
           [data-radix-toast-provider], 
           [role="region"][aria-label="Notifications"], 
           .toaster,
@@ -299,7 +297,8 @@ export default function GBOAnalysis() {
           </header>
         </div>
 
-        <div className="container mx-auto px-4 pb-12 print:p-12 print:max-w-none print:w-[100vw]">
+        {/* Adicionado print:break-inside-avoid para forçar a renderização em 1 bloco */}
+        <div className="container mx-auto px-4 pb-12 print:p-12 print:max-w-none print:w-[100vw] print:break-inside-avoid">
           <div className="grid gap-6 lg:gap-8 xl:grid-cols-3 print:flex print:w-full">
             
             <div className="xl:col-span-1 print:hidden">
@@ -478,7 +477,6 @@ export default function GBOAnalysis() {
                   <div className="tech-card tech-glow print:hidden">
                     <CalculationsDashboard operations={operations} timeUnit={timeUnit} taktTime={calculateTaktTime()} taktTimeUnit={timeUnitTakt} demandUnit={demandUnit} />
                   </div>
-                  {/* print:p-8 adicionado aqui para criar o distanciamento correto do título com a borda */}
                   <div className="tech-card tech-glow p-4 rounded-lg bg-card print-chart print:p-8 print:border-none print:shadow-none print:bg-transparent">
                     <GBOChart operations={operations} timeUnit={timeUnit} taktTime={calculateTaktTime()} taktTimeUnit={timeUnitTakt} demandUnit={demandUnit} />
                   </div>
