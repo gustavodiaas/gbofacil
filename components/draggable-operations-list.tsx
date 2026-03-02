@@ -1,11 +1,9 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Trash2, GripVertical } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { GripVertical, Trash2, Pencil, Check, X } from "lucide-react"
 
 interface Operation {
   id: string
@@ -16,122 +14,140 @@ interface Operation {
 
 interface DraggableOperationsListProps {
   operations: Operation[]
-  timeUnit: string
-  onReorder: (newOperations: Operation[]) => void
+  timeUnit: "minutes" | "seconds"
+  onReorder: (operations: Operation[]) => void
   onRemove: (id: string) => void
+  onEdit?: (id: string, name: string, time: number) => void
 }
 
-export function DraggableOperationsList({ operations, timeUnit, onReorder, onRemove }: DraggableOperationsListProps) {
-  const [draggedItem, setDraggedItem] = useState<string | null>(null)
-  const [dragOverItem, setDragOverItem] = useState<string | null>(null)
+export function DraggableOperationsList({
+  operations,
+  timeUnit,
+  onReorder,
+  onRemove,
+  onEdit,
+}: DraggableOperationsListProps) {
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editName, setEditName] = useState("")
+  const [editTime, setEditTime] = useState("")
 
-  const handleDragStart = (e: React.DragEvent, operationId: string) => {
-    setDraggedItem(operationId)
-    e.dataTransfer.effectAllowed = "move"
-    e.dataTransfer.setData("text/html", operationId)
-  }
+  const handleDragStart = (index: number) => setDraggedIndex(index)
 
-  const handleDragOver = (e: React.DragEvent, operationId: string) => {
+  const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault()
-    e.dataTransfer.dropEffect = "move"
-    setDragOverItem(operationId)
-  }
-
-  const handleDragLeave = () => {
-    setDragOverItem(null)
-  }
-
-  const handleDrop = (e: React.DragEvent, targetOperationId: string) => {
-    e.preventDefault()
-
-    if (!draggedItem || draggedItem === targetOperationId) {
-      setDraggedItem(null)
-      setDragOverItem(null)
-      return
-    }
-
-    const draggedIndex = operations.findIndex((op) => op.id === draggedItem)
-    const targetIndex = operations.findIndex((op) => op.id === targetOperationId)
-
-    if (draggedIndex === -1 || targetIndex === -1) return
+    if (draggedIndex === null || draggedIndex === index) return
 
     const newOperations = [...operations]
-    const [draggedOperation] = newOperations.splice(draggedIndex, 1)
-    newOperations.splice(targetIndex, 0, draggedOperation)
+    const draggedOp = newOperations[draggedIndex]
+    newOperations.splice(draggedIndex, 1)
+    newOperations.splice(index, 0, draggedOp)
 
     onReorder(newOperations)
-    setDraggedItem(null)
-    setDragOverItem(null)
+    setDraggedIndex(index)
   }
 
-  const handleDragEnd = () => {
-    setDraggedItem(null)
-    setDragOverItem(null)
+  const handleDragEnd = () => setDraggedIndex(null)
+
+  const startEditing = (op: Operation) => {
+    setEditingId(op.id)
+    setEditName(op.name)
+    setEditTime(op.time.toString())
   }
 
-  const convertToDisplayUnit = (time: number, fromUnit: "minutes" | "seconds", toUnit: string): number => {
-    if (fromUnit === toUnit) return time
-    if (fromUnit === "minutes" && toUnit === "seconds") return time * 60
-    if (fromUnit === "seconds" && toUnit === "minutes") return time / 60
-    return time
+  const cancelEditing = () => {
+    setEditingId(null)
+    setEditName("")
+    setEditTime("")
+  }
+
+  const saveEditing = (id: string) => {
+    const time = parseFloat(editTime)
+    if (!editName.trim() || isNaN(time) || time < 0) return
+
+    if (onEdit) {
+      onEdit(id, editName.trim(), time)
+    }
+    setEditingId(null)
   }
 
   if (operations.length === 0) return null
 
   return (
-    <div className="space-y-2">
-      <Label>Operações Adicionadas ({operations.length})</Label>
-      <p className="text-xs text-muted-foreground">Arraste para reorganizar a ordem</p>
-      <div className="space-y-2 max-h-64 overflow-y-auto">
-        {operations.map((operation, index) => {
-          const displayTime = convertToDisplayUnit(operation.time, operation.unit, timeUnit)
-          const showConversion = operation.unit !== timeUnit
-
-          return (
-            <div
-              key={operation.id}
-              draggable
-              onDragStart={(e) => handleDragStart(e, operation.id)}
-              onDragOver={(e) => handleDragOver(e, operation.id)}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, operation.id)}
-              onDragEnd={handleDragEnd}
-              className={`flex items-center gap-2 p-3 rounded-lg border transition-all cursor-move ${
-                draggedItem === operation.id
-                  ? "opacity-50 scale-95"
-                  : dragOverItem === operation.id
-                    ? "bg-accent/20 border-accent"
-                    : "bg-muted border-transparent hover:bg-muted/80"
-              }`}
-            >
-              <div className="flex items-center text-muted-foreground">
-                <GripVertical className="h-4 w-4" />
-                <span className="text-xs font-mono ml-1 min-w-[20px]">{index + 1}</span>
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-sm">{operation.name}</p>
-                <div className="text-xs text-muted-foreground">
-                  <p>
-                    {displayTime.toFixed(1)} {timeUnit}
-                  </p>
-                  {showConversion && (
-                    <p className="text-xs opacity-75">
-                      Original: {operation.time} {operation.unit}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onRemove(operation.id)}
-                className="text-destructive hover:text-destructive shrink-0"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+    <div className="space-y-2 mt-6">
+      <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
+        Operações Adicionadas ({operations.length})
+      </h3>
+      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+        {operations.map((op, index) => (
+          <div
+            key={op.id}
+            draggable={editingId !== op.id} // Desativa o drag enquanto edita
+            onDragStart={() => handleDragStart(index)}
+            onDragOver={(e) => handleDragOver(e, index)}
+            onDragEnd={handleDragEnd}
+            className={`flex items-center gap-3 p-3 bg-card border rounded-lg transition-all ${
+              draggedIndex === index ? "opacity-50 border-primary" : "border-border hover:border-primary/50"
+            }`}
+          >
+            <div className={`p-1 text-muted-foreground ${editingId === op.id ? "opacity-30" : "cursor-grab active:cursor-grabbing hover:text-foreground"}`}>
+              <GripVertical className="h-4 w-4" />
             </div>
-          )
-        })}
+            
+            <div className="flex-1 flex items-center justify-between min-w-0">
+              {editingId === op.id ? (
+                <div className="flex items-center gap-2 flex-1 mr-2">
+                  <Input 
+                    value={editName} 
+                    onChange={(e) => setEditName(e.target.value)} 
+                    className="h-8 text-sm tech-glow bg-background" 
+                    placeholder="Nome"
+                    autoFocus
+                  />
+                  <Input 
+                    type="number" 
+                    step="0.1" 
+                    min="0"
+                    value={editTime} 
+                    onChange={(e) => setEditTime(e.target.value)} 
+                    className="h-8 w-20 text-sm tech-glow bg-background" 
+                    placeholder="Tempo"
+                    onKeyDown={(e) => e.key === 'Enter' && saveEditing(op.id)}
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-medium truncate">{op.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {op.time.toFixed(1)} {op.unit}
+                  </span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-1 ml-2">
+                {editingId === op.id ? (
+                  <>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-green-500 hover:text-green-500 hover:bg-green-500/10" onClick={() => saveEditing(op.id)}>
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={cancelEditing}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10" onClick={() => startEditing(op)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => onRemove(op.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )
