@@ -248,27 +248,12 @@ export default function GBOAnalysis() {
         }
       `}} />
 
-      <div className="min-h-screen bg-background relative print:min-h-0 print:bg-transparent">
-        <input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileChange} className="hidden" />
-
-        <div className="pt-6 pb-8 px-4 w-full flex justify-center z-50 print:hidden">
-          <header className="glass-panel tech-glow rounded-2xl w-full max-w-5xl px-6 py-3 flex items-center justify-between shadow-lg">
-            <div className="flex items-center gap-4">
-              <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 relative group overflow-hidden">
-                <div className="absolute inset-0 bg-primary/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary relative z-10">
-                  <path d="M3 3v18h18" />
-                  <path d="M18 9l-5 5-4-4-5 5" />
-                  <circle cx="18" cy="9" r="2.5" fill="currentColor" />
-                </svg>
-              </div>
-              <div className="flex flex-col">
+     <div className="flex flex-col">
                 <h1 className="text-xl font-bold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
                   Análise GBO
                 </h1>
                 <p className="text-[10px] uppercase tracking-[0.2em] text-primary/80 font-bold">Terminal GBO</p>
               </div>
-            </div>
             
             <div className="flex items-center gap-4">
               <ThemeToggle />
