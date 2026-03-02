@@ -143,16 +143,16 @@ export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit, demandU
         )}
       </div>
 
-      <div className="h-[450px] w-full mt-2 print:h-[65vh]">
+      {/* Reduzido de 65vh para 50vh para garantir margem segura em qualquer impressora */}
+      <div className="h-[450px] w-full mt-2 print:h-[50vh]">
         <ResponsiveContainer width="100%" height="100%">
-          {/* Margens inferiores e esquerdas reajustadas para eliminar o buraco em branco */}
           <BarChart data={chartData} margin={{ top: 20, right: 30, left: 35, bottom: 65 }}>
             <CartesianGrid strokeDasharray="3 3" className="opacity-20" vertical={false} />
             <XAxis 
               dataKey="name" 
               angle={-45} 
               textAnchor="end" 
-              height={65} /* Altura reduzida para aproximar a legenda */
+              height={65} 
               interval={0} 
               fontSize={11}
               tickMargin={15}
