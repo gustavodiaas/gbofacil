@@ -220,33 +220,48 @@ export default function GBOAnalysis() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{__html: `
+     <style dangerouslySetInnerHTML={{__html: `
   @media print {
-    /* 1. Força o layout em paisagem e remove margens do navegador (data, hora, URL) */
+    /* 1. Mantenha o layout em paisagem e remova as margens padrão do navegador */
     @page {
       size: landscape;
       margin: 0;
     }
 
-    /* 2. Oculta tudo */
+    /* Força cores exatas, crucial para a legenda */
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+
+    /* 2. Oculta absolutamente tudo */
     body * { visibility: hidden; }
 
-    /* 3. Re-exibe apenas o gráfico e o força a ocupar todo o espaço */
-    .print-chart, .print-chart * { visibility: visible; }
-    .print-chart {
-      position: absolute;
-      left: 0;
-      top: 0;
+    /* 3. Transforma o BODY na página inteira e o prepara para centralizar o gráfico */
+    body {
+      visibility: visible;
+      display: flex !important;
+      justify-content: center !important; /* Centraliza horizontalmente */
+      align-items: center !important;     /* Centraliza verticalmente */
       width: 100vw;
       height: 100vh;
-      padding: 2cm !important; /* Margem de segurança */
-      background: transparent !important;
+      margin: 0 !important;
+      background: #ffffff !important; /* Garante fundo branco */
+    }
+
+    /* 4. Configura o contêiner do gráfico para ser centralizado */
+    .print-chart {
+      visibility: visible;
+      display: block !important;
+      /* Removemos o posicionamento absoluto top=0/left=0 anterior */
+      width: auto !important; /* Ocupa apenas o espaço necessário */
+      max-width: 90% !important; /* Limita a largura para não colar nas bordas com o padding */
+      height: auto !important; /* Mantém a proporção */
+      max-height: 85vh !important; /* Evita que o gráfico fique maior que a página */
+      padding: 1.5cm !important; /* Mantemos um padding como margem de segurança */
+      margin: auto !important; /* Força centralização extra se Flexbox falhar */
+      background: #ffffff !important;
+      border-radius: 12px !important; /* Mantém a estética original */
       box-shadow: none !important;
       border: none !important;
-
-      /* 4. Força a renderização exata das cores (resolve a legenda apagada) */
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
     }
   }
 `}} />
