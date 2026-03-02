@@ -151,6 +151,13 @@ export default function GBOAnalysis() {
     if (operation) toast({ title: "Operação removida", description: `"${operation.name}" foi removida.` })
   }
 
+  const editOperation = (id: string, newName: string, newTime: number) => {
+    setOperations(
+      operations.map((op) => (op.id === id ? { ...op, name: newName, time: newTime } : op))
+    )
+    toast({ title: "✅ Atualizado", description: `Operação "${newName}" atualizada.` })
+  }
+
   const reorderOperations = (newOperations: Operation[]) => {
     setOperations(newOperations)
     toast({ title: "✅ Ordem atualizada", description: "A ordem das operações foi reorganizada." })
@@ -189,7 +196,6 @@ export default function GBOAnalysis() {
 
   const handleExportChartPDF = () => {
     if (operations.length === 0) return
-    // Aumentado para 300ms. Dá tempo de sobra para a animação do menu desaparecer da tela
     setTimeout(() => {
       window.print()
     }, 300)
@@ -225,13 +231,11 @@ export default function GBOAnalysis() {
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
           @page { size: landscape; margin: 0; }
-          
           body { 
             background: white !important; 
             -webkit-print-color-adjust: exact !important; 
             print-color-adjust: exact !important; 
           }
-
           [data-radix-toast-provider], 
           [role="region"][aria-label="Notifications"], 
           .toaster,
@@ -297,7 +301,6 @@ export default function GBOAnalysis() {
           </header>
         </div>
 
-        {/* Adicionado print:break-inside-avoid para forçar a renderização em 1 bloco */}
         <div className="container mx-auto px-4 pb-12 print:p-12 print:max-w-none print:w-[100vw] print:break-inside-avoid">
           <div className="grid gap-6 lg:gap-8 xl:grid-cols-3 print:flex print:w-full">
             
@@ -466,7 +469,13 @@ export default function GBOAnalysis() {
                     </DropdownMenu>
                   </div>
 
-                  <DraggableOperationsList operations={operations} timeUnit={timeUnit} onReorder={reorderOperations} onRemove={removeOperation} />
+                  <DraggableOperationsList 
+                    operations={operations} 
+                    timeUnit={timeUnit} 
+                    onReorder={reorderOperations} 
+                    onRemove={removeOperation} 
+                    onEdit={editOperation}
+                  />
                 </CardContent>
               </Card>
             </div>
