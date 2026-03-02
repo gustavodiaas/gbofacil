@@ -221,21 +221,35 @@ export default function GBOAnalysis() {
   return (
     <>
       <style dangerouslySetInnerHTML={{__html: `
-        @media print {
-          body * { visibility: hidden; }
-          .print-chart, .print-chart * { visibility: visible; }
-          .print-chart { 
-            position: absolute; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            padding: 20px !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            border: none !important;
-          }
-        }
-      `}} />
+  @media print {
+    /* 1. Força o layout em paisagem e remove margens do navegador (data, hora, URL) */
+    @page {
+      size: landscape;
+      margin: 0;
+    }
+
+    /* 2. Oculta tudo */
+    body * { visibility: hidden; }
+
+    /* 3. Re-exibe apenas o gráfico e o força a ocupar todo o espaço */
+    .print-chart, .print-chart * { visibility: visible; }
+    .print-chart {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      padding: 2cm !important; /* Margem de segurança */
+      background: transparent !important;
+      box-shadow: none !important;
+      border: none !important;
+
+      /* 4. Força a renderização exata das cores (resolve a legenda apagada) */
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+`}} />
 
       <div className="min-h-screen bg-background relative">
         <input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileChange} className="hidden" />
