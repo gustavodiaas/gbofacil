@@ -189,7 +189,10 @@ export default function GBOAnalysis() {
 
   const handleExportChartPDF = () => {
     if (operations.length === 0) return
-    window.print()
+    // Atraso de 100ms para permitir que o menu dropdown feche visualmente antes da captura de tela da impressão
+    setTimeout(() => {
+      window.print()
+    }, 100)
   }
 
   const handleImportExcel = () => {
@@ -230,13 +233,15 @@ export default function GBOAnalysis() {
             print-color-adjust: exact !important; 
           }
 
-          /* Destrói qualquer Toast/Alerta na hora da impressão */
+          /* Destrói Toasts, Alertas e Menus Suspensos nativamente na hora da impressão */
           [data-radix-toast-provider], 
           [role="region"][aria-label="Notifications"], 
-          .toaster {
+          .toaster,
+          [data-radix-popper-content-wrapper] {
             display: none !important;
             opacity: 0 !important;
             visibility: hidden !important;
+            pointer-events: none !important;
           }
         }
       `}} />
@@ -294,7 +299,6 @@ export default function GBOAnalysis() {
           </header>
         </div>
 
-        {/* Adicionado print:p-12 (aprox 3cm) para criar a margem de segurança branca na folha */}
         <div className="container mx-auto px-4 pb-12 print:p-12 print:max-w-none print:w-[100vw]">
           <div className="grid gap-6 lg:gap-8 xl:grid-cols-3 print:flex print:w-full">
             
@@ -474,7 +478,8 @@ export default function GBOAnalysis() {
                   <div className="tech-card tech-glow print:hidden">
                     <CalculationsDashboard operations={operations} timeUnit={timeUnit} taktTime={calculateTaktTime()} taktTimeUnit={timeUnitTakt} demandUnit={demandUnit} />
                   </div>
-                  <div className="tech-card tech-glow p-4 rounded-lg bg-card print-chart print:p-0 print:border-none print:shadow-none print:bg-transparent">
+                  {/* print:p-8 adicionado aqui para criar o distanciamento correto do título com a borda */}
+                  <div className="tech-card tech-glow p-4 rounded-lg bg-card print-chart print:p-8 print:border-none print:shadow-none print:bg-transparent">
                     <GBOChart operations={operations} timeUnit={timeUnit} taktTime={calculateTaktTime()} taktTimeUnit={timeUnitTakt} demandUnit={demandUnit} />
                   </div>
                 </>
