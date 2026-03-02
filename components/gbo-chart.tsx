@@ -59,7 +59,6 @@ export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit, demandU
   const maxOperationWithPadding = maxOperationTime * 1.1
   const taktWithPadding = taktTimeInDisplayUnit ? taktTimeInDisplayUnit * 1.1 : 0
   
-  // Arredonda para cima para matar o erro das dízimas infinitas (ex: 10.00000001)
   const yAxisMax = Math.ceil(Math.max(maxOperationWithPadding, taktWithPadding))
 
   const chartData = operationsInDisplayUnit.map((operation, index) => {
@@ -144,29 +143,27 @@ export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit, demandU
         )}
       </div>
 
-      <div className="h-[450px] w-full mt-2 print:h-[60vh]">
+      <div className="h-[450px] w-full mt-2 print:h-[65vh]">
         <ResponsiveContainer width="100%" height="100%">
-          {/* Margem left ajustada para 45 para o texto caber sem cortar */}
-          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 45, bottom: 120 }}>
+          {/* Margens inferiores e esquerdas reajustadas para eliminar o buraco em branco */}
+          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 35, bottom: 65 }}>
             <CartesianGrid strokeDasharray="3 3" className="opacity-20" vertical={false} />
             <XAxis 
               dataKey="name" 
               angle={-45} 
               textAnchor="end" 
-              height={120} 
+              height={65} /* Altura reduzida para aproximar a legenda */
               interval={0} 
               fontSize={11}
-              tickMargin={20}
+              tickMargin={15}
               tick={{ fill: 'hsl(var(--muted-foreground))' }}
               axisLine={{ stroke: 'hsl(var(--border))' }}
               tickLine={false}
             />
             <YAxis
-              /* Label afastado com offset e posicionado corretamente */
               label={{ value: `Tempo (${timeUnit})`, angle: -90, position: "insideLeft", offset: 15, fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
               fontSize={11}
               domain={[0, yAxisMax]}
-              /* tickFormatter limpa sujeiras decimais e força uma exibição limpa */
               tickFormatter={(value) => parseFloat(value.toFixed(1))}
               tick={{ fill: 'hsl(var(--muted-foreground))' }}
               axisLine={false}
@@ -190,7 +187,7 @@ export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit, demandU
         </ResponsiveContainer>
       </div>
 
-      <div className="flex items-center justify-center gap-6 mt-4 text-xs flex-wrap font-medium text-muted-foreground">
+      <div className="flex items-center justify-center gap-6 mt-2 text-xs flex-wrap font-medium text-muted-foreground">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-sm bg-primary"></div>
           <span>Operação Normal</span>
