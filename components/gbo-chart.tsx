@@ -47,10 +47,8 @@ export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit, demandU
     operationsInSeconds.reduce((sum, op) => sum + op.timeInSeconds, 0) / operationsInSeconds.length
   const averageTime = convertFromSeconds(averageTimeInSeconds, timeUnit)
 
-  const maxTimeInSeconds = Math.max(...operationsInSeconds.map((op) => op.timeInSeconds))
   const taktTimeInDisplayUnit = taktTime ? convertFromSeconds(taktTime, timeUnit) : undefined
 
-  // Recupera o valor exato do painel lateral para exibir lado a lado no gráfico
   const originalTaktValue = taktTime ? (
     taktTimeUnit === "hours" ? taktTime / 3600 :
     taktTimeUnit === "minutes" ? taktTime / 60 :
@@ -60,10 +58,12 @@ export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit, demandU
   const maxOperationTime = Math.max(...operationsInDisplayUnit.map((op) => op.timeInDisplayUnit))
   const maxOperationWithPadding = maxOperationTime * 1.1
   const taktWithPadding = taktTimeInDisplayUnit ? taktTimeInDisplayUnit * 1.1 : 0
-  const yAxisMax = Math.max(maxOperationWithPadding, taktWithPadding)
+  
+  // Arredonda para cima para matar o erro das dízimas infinitas (ex: 10.00000001)
+  const yAxisMax = Math.ceil(Math.max(maxOperationWithPadding, taktWithPadding))
 
   const chartData = operationsInDisplayUnit.map((operation, index) => {
-    const isMaxTime = operation.timeInSeconds === maxTimeInSeconds
+    const isMaxTime = operation.timeInSeconds === Math.max(...operationsInSeconds.map((op) => op.timeInSeconds))
     const exceedsTakt = taktTime ? operation.timeInSeconds > taktTime : false
     const isBottleneck = isMaxTime || exceedsTakt
 
@@ -118,7 +118,7 @@ export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit, demandU
             ) : (
               <h2 className="text-xl font-bold text-foreground">
                 {chartTitle}
-                <Pencil className="h-4 w-4 inline-block ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
+                <Pencil className="h-4 w-4 inline-block ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground print:hidden" />
               </h2>
             )}
           </div>
@@ -135,7 +135,6 @@ export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit, demandU
         {taktTimeInDisplayUnit && (
           <span className="text-muted-foreground">
             <strong>Takt:</strong> <span className="text-foreground">{taktTimeInDisplayUnit.toFixed(1)} {timeUnit}</span>
-            {/* Aqui matamos a confusão mental exibindo a unidade original */}
             {taktTimeUnit !== timeUnit && originalTaktValue && (
               <span className="text-xs opacity-60 ml-2">
                 ({originalTaktValue.toFixed(2)} {taktTimeUnit}/{demandUnit})
@@ -145,26 +144,30 @@ export function GBOChart({ operations, timeUnit, taktTime, taktTimeUnit, demandU
         )}
       </div>
 
-      <div className="h-[450px] w-full mt-2">
+      <div className="h-[450px] w-full mt-2 print:h-[60vh]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 120 }}>
+          {/* Margem left ajustada para 45 para o texto caber sem cortar */}
+          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 45, bottom: 120 }}>
             <CartesianGrid strokeDasharray="3 3" className="opacity-20" vertical={false} />
             <XAxis 
               dataKey="name" 
               angle={-45} 
               textAnchor="end" 
-              height={120} /* Aumentado para o texto não ser cortado */
+              height={120} 
               interval={0} 
               fontSize={11}
-              tickMargin={20} /* Afasta o texto das barras */
+              tickMargin={20}
               tick={{ fill: 'hsl(var(--muted-foreground))' }}
               axisLine={{ stroke: 'hsl(var(--border))' }}
               tickLine={false}
             />
             <YAxis
-              label={{ value: `Tempo (${timeUnit})`, angle: -90, position: "insideLeft", fill: 'hsl(var(--muted-foreground))', fontSize: 12, dy: 30 }}
+              /* Label afastado com offset e posicionado corretamente */
+              label={{ value: `Tempo (${timeUnit})`, angle: -90, position: "insideLeft", offset: 15, fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
               fontSize={11}
               domain={[0, yAxisMax]}
+              /* tickFormatter limpa sujeiras decimais e força uma exibição limpa */
+              tickFormatter={(value) => parseFloat(value.toFixed(1))}
               tick={{ fill: 'hsl(var(--muted-foreground))' }}
               axisLine={false}
               tickLine={false}
